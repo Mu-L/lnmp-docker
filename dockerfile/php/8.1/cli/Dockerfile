@@ -1,16 +1,16 @@
 # syntax=docker/dockerfile:labs
-ARG PHP_VERSION=8.1.0
+ARG PHP_VERSION=8.1.1
 
 FROM --platform=$TARGETPLATFORM php:${PHP_VERSION}-alpine as upstream
 
-FROM --platform=$TARGETPLATFORM alpine:3.14
+FROM --platform=$TARGETPLATFORM alpine:3.16
 
 LABEL maintainer="khs1994-docker/lnmp <khs1994@khs1994.com>"
 
 ENV TZ=Asia/Shanghai \
     APP_ENV=development
 
-ARG PHP_VERSION=8.1.0
+ARG PHP_VERSION=8.1.1
 
 ARG ALPINE_URL=dl-cdn.alpinelinux.org
 
@@ -199,6 +199,7 @@ RUN --mount=type=bind,from=upstream,source=/usr/src,target=/usr/local/src,rw \
           # libavif-dev \
           ${APK_DEV_EXTRA:-} \
   \
+  && rm -vf /usr/include/iconv.h \
   && export CFLAGS="$PHP_CFLAGS" \
             CPPFLAGS="$PHP_CPPFLAGS" \
             LDFLAGS="$PHP_LDFLAGS" \
@@ -305,7 +306,6 @@ RUN --mount=type=bind,from=upstream,source=/usr/src,target=/usr/local/src,rw \
                            curl \
                            zip \
                            ffi \
-                           # iconv \
                            ${PHP_EXTENSION_EXTRA:-} \
   && echo "extension=exif" > $PHP_INI_DIR/conf.d/docker-php-ext-z-exif.ini \
   && echo "extension=gd" > $PHP_INI_DIR/conf.d/docker-php-ext-z-gd.ini \

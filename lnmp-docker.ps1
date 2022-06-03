@@ -1,7 +1,7 @@
 
 <#PSScriptInfo
 
-.VERSION 20.10.12
+.VERSION 20.10.15
 
 .GUID 9769fa4f-70c7-43ed-8d2b-a0018f7dc89f
 
@@ -185,6 +185,10 @@ Function New-InitFile() {
 
   if (!(Test-Path config/redis/redis.conf)) {
     New-Item -ItemType File config/redis/redis.conf
+  }
+
+  if (!(Test-Path config/mysql/conf.d/my.cnf)) {
+    New-Item -ItemType File config/mysql/conf.d/my.cnf
   }
 
   _cp_only_not_exists docker-lnmp.override.example.yml docker-lnmp.override.yml
@@ -682,7 +686,7 @@ $env:USE_WSL2_BUT_DOCKER_NOT_RUNNING = '0'
 if ($APP_ROOT.Substring(0, 1) -eq '/' -and $WSL2_DIST) {
   $env:USE_WSL2_DOCKER_COMPOSE = '1'
 
-  if (!(Test-Path \\wsl$\ubuntu/mnt/wsl/docker-desktop/cli-tools/usr/bin/docker)) {
+  if (!(Test-Path \\wsl$\$WSL2_DIST/mnt/wsl/docker-desktop/cli-tools/usr/bin/docker)) {
     $env:USE_WSL2_BUT_DOCKER_NOT_RUNNING = '1'
   }
 

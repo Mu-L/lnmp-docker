@@ -102,6 +102,7 @@ APP_ROOT=/app
 
 ```powershell
 # .env.ps1
+# 请将 Ubuntu 换成你使用的 WSL2 名称
 $WSL2_DIST="Ubuntu"
 ```
 
@@ -190,6 +191,7 @@ LNMP_SERVICES="nginx mysql php7 redis vscode-remote-container-workspace"
 
 ```powershell
 # .env.ps1
+# 请将 Ubuntu 换成你使用的 WSL2 名称
 $WSL2_DIST="ubuntu"
 ```
 
@@ -239,7 +241,7 @@ $ lnmp-docker code-run -w /app/laravel npm run dev
 
 ## PHP 相关的 vsCode 扩展
 
-* `felixfbecker.php-debug`
+* `xdebug.php-debug`
 * 更多扩展请查看 https://github.com/khs1994-docker/lnmp/blob/master/.devcontainer/devcontainer.json **extensions** 项
 
 ## 运行 Laravel 队列(Queue)

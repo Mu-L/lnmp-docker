@@ -48,7 +48,7 @@ services:
       - "${LNMP_MYSQL_PORT:-127.0.0.1:3306}:3306"
       - "${LNMP_MYSQL_PORT_X:-127.0.0.1:33060}:33060"
     volumes:
-      - ./config/mysql/${LNMP_MYSQL_CONF:-docker.cnf}:/etc/mysql/conf.d/docker.cnf:ro
+      - ./config/mysql/${LNMP_MYSQL_CONF_D:-conf.d}:/etc/mysql/conf.d
       # @link https://github.com/docker-library/docs/tree/master/mysql#initializing-a-fresh-instance
       - ./scripts/backup/init:/docker-entrypoint-initdb.d:ro
       - type: volume
@@ -77,7 +77,7 @@ services:
   redis:
     << : *common
     << : *common-labels
-    image: "${LNMP_LIBRARY_NS:-library}/redis:${LNMP_REDIS_VERSION:-6.2.5}-alpine"
+    image: "${LNMP_LIBRARY_NS:-library}/redis:${LNMP_REDIS_VERSION:-7.0.0}-alpine"
     ports:
       - "${LNMP_REDIS_PORT:-127.0.0.1:6379}:6379"
     volumes:
@@ -109,7 +109,7 @@ services:
   memcached:
     << : *common
     << : *common-labels
-    image: ${LNMP_LIBRARY_NS:-library}/memcached:${LNMP_MEMCACHED_VERSION:-1.6.10}-alpine
+    image: ${LNMP_LIBRARY_NS:-library}/memcached:${LNMP_MEMCACHED_VERSION:-1.6.15}-alpine
     ports:
       - "${LNMP_MEMCACHED_PORT:-127.0.0.1:11211}:11211"
     volumes:
@@ -124,7 +124,7 @@ services:
     &php7
     << : *common
     << : *common-labels
-    image: "${LNMP_DOCKER_IMAGE_PREFIX:-khs1994}/php:${LNMP_PHP7_VERSION:-7.4.25}-fpm-alpine"
+    image: "${LNMP_DOCKER_IMAGE_PREFIX:-khs1994}/php:${LNMP_PHP7_VERSION:-7.4.28}-fpm-alpine"
     volumes:
       - &bind_app ${APP_ROOT:-./app}:${LNMP_PHP_PATH:-/app}
       # fpm config
@@ -139,7 +139,8 @@ services:
       - ./log/supervisord.log:/var/log/supervisord.log
       - ./log/supervisord:/var/log/supervisord
       # s6
-      - ./config/s6/services.d:/etc/services.d
+      - ./config/s6/${S6_SERVICES_D:-services.d}:/etc/services.d
+      - ./config/s6/${S6_RC_D:-s6-rc.d}:/etc/s6-overlay/s6-rc.d
       - ./config/crontabs/root:/etc/crontabs/root
       - type: volume
         source: zoneinfo-data
@@ -148,16 +149,18 @@ services:
           nocopy: false
       # if /run is tmpfs, s6 can't run
       # - type: tmpfs
-      #  target: /run
-        # tmpfs:
-        #   size: 1000
+      #   target: /run
+      #   tmpfs:
+      #     size: 1000
     networks:
-      frontend:
-        aliases:
-        - php
-      backend:
-        aliases:
-        - php
+      - frontend
+      - backend
+      # frontend:
+      #   aliases:
+      #   - php
+      # backend:
+      #   aliases:
+      #   - php
     expose:
       - "9000"
     command: php-fpm -R -F
@@ -174,7 +177,7 @@ services:
     &php8
     << : *common
     << : *common-labels
-    image: "${LNMP_DOCKER_IMAGE_PREFIX:-khs1994}/php:${LNMP_PHP8_VERSION:-8.0.12}-fpm-alpine"
+    image: "${LNMP_DOCKER_IMAGE_PREFIX:-khs1994}/php:${LNMP_PHP8_VERSION:-8.1.1}-fpm-alpine"
     volumes:
       - *bind_app
       # - ${APP_ROOT:-./app}:${LNMP_PHP_PATH:-/app}
@@ -190,7 +193,8 @@ services:
       # - ./log/supervisord.log:/var/log/supervisord.log
       # - ./log/supervisord:/var/log/supervisord
       # s6
-      - ./config/s6/services.d:/etc/services.d
+      - ./config/s6/${S6_SERVICES_D:-services.d}:/etc/services.d
+      - ./config/s6/${S6_RC_D:-s6-rc.d}:/etc/s6-overlay/s6-rc.d
       - ./config/crontabs/root:/etc/crontabs/root
       - type: volume
         source: zoneinfo-data
@@ -199,8 +203,14 @@ services:
           nocopy: false
       - << : *tmpfs
     networks:
-      - frontend
-      - backend
+      # - frontend
+      # - backend
+      frontend:
+        aliases:
+        - php
+      backend:
+        aliases:
+        - php
     expose:
       - "9000"
     command: php-fpm -R -F
@@ -217,7 +227,7 @@ services:
     << : *common
     << : *common-labels
     restart: "no"
-    image: "${LNMP_DOCKER_IMAGE_PREFIX:-khs1994}/php:${LNMP_PHP_VERSION:-8.0.12}-composer-alpine"
+    image: "${LNMP_DOCKER_IMAGE_PREFIX:-khs1994}/php:${LNMP_PHP_VERSION:-8.1.1}-composer-alpine"
     volumes:
       - *bind_app
       # - ${APP_ROOT:-./app}:${LNMP_PHP_PATH:-/app}
@@ -233,7 +243,7 @@ services:
     << : *php7
     networks:
       - backend
-    image: "${LNMP_DOCKER_IMAGE_PREFIX:-khs1994}/php:${LNMP_PHP_VERSION:-7.4.25}-supervisord-alpine"
+    image: "${LNMP_DOCKER_IMAGE_PREFIX:-khs1994}/php:${LNMP_PHP_VERSION:-7.4.28}-supervisord-alpine"
     secrets:
       - source: supervisord_ini
         target: /etc/supervisor.d/supervisord.ini
@@ -244,7 +254,7 @@ services:
   phpmyadmin:
     << : *common
     << : *common-labels
-    image: ${LNMP_LIBRARY_NS:-library}/phpmyadmin:${LNMP_PHPMYADMIN_VERSION:-5.1.1}
+    image: ${LNMP_LIBRARY_NS:-library}/phpmyadmin:${LNMP_PHPMYADMIN_VERSION:-5.2.0}
     environment:
       - PMA_HOST=mysql
     ports:
